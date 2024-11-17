@@ -84,17 +84,63 @@ void readCityData(const std::string &filename) {
 }
 
 void readRoadData(const std::string &filename, Graph &graph) {
+	//Attempt to open the given file
     std::ifstream file(filename);
+	
+	//Register exceptions
+	file.exceptions(ifstream::eofbit | ifstream::failbit | ifstream::badbit);
+	
     if (!file.is_open()) {
         std::cerr << "Error: Unable to open road file\n";
-        exit(EXIT_FAILURE);
+        throw std::ios_base::failure("Unable to open city file"); //throw to terminate
     }
-    std::string line;
-    while (std::getline(file, line)) {
-        std::istringstream iss(line);
+
+	//Read the file
+	unsigned int linePosition = 0;
+    while (file.good()) {
+		//Data to read
         int from, to, distance;
-        iss >> from >> to >> distance;
+		
+		//Read data, purge whitespace
+		try
+		{
+			file >> from >> std::ws >> to >> std::ws >> distance;
+		}
+		catch (std::ios_base::failure& e)
+		{
+			//Could not extract the required data. File malformed?
+			std::cerr << "Error: Road file contains malformed data at line "
+					  << linePosition << "\n";
+					  
+			throw std::ios_base::failure("Unable to parse Road file"); //throw to terminate
+		}
+		
+		//Commit data to graph
         graph.addDirectedEdge(from, to, distance);
+		
+		//Purge newline char, if it's there
+		try
+		{
+			if (file.peek() == '\n') file.ignore();
+		}
+		catch (std::ios_base::failure& e)
+		{
+			//Check if we just ran out of data
+			if (file.rdstate() == ifstream::eofbit)
+			{
+				//Only ran out of data, we're in a good spot to just stop reading
+				++linePosition;
+				break;
+			}
+
+			//Malformed data
+			std::cerr << "Error: Road file contains malformed data at end of line "
+					  << linePosition << "\n";
+					  
+			throw std::ios_base::failure("Unable to parse road file"); //throw to terminate
+		}
+		
+		++linePosition;
     }
     file.close();
 }
