@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <queue>
 #include <limits>
+#include <exception>
+
 #include "graph.h" // Include your graph header file here
 
 struct CityInfo {
@@ -16,18 +18,67 @@ struct CityInfo {
 
 std::unordered_map<std::string, CityInfo> cities;
 void readCityData(const std::string &filename) {
+	//Attempt to open the given file
     std::ifstream file(filename);
+	
+	//Register exceptions
+	file.exceptions(ifstream::eofbit | ifstream::failbit | ifstream::badbit);
+
     if (!file.is_open()) {
         std::cerr << "Error: Unable to open city file\n";
-        exit(EXIT_FAILURE);
+        throw std::ios_base::failure("Unable to open city file"); //throw to terminate
     }
+	
+	//Read each line of the file until we run out of data
     std::string line;
-    while (std::getline(file, line)) {
-        std::istringstream iss(line);
+	unsigned int linePosition = 0;
+    while (file.good()) {
+		//Data to extract
         int id, population, elevation;
         std::string code, name;
-        iss >> id >> code >> name >> population >> elevation;
-        cities[code] = {code, name, population, elevation};
+		
+		//Try to extract data from the line using spaces as the delimiter
+		try
+		{
+			file >> id >> std::ws; //Extract id, purge whitespace
+			std::getline(file, code, ' '); file >> std::ws; //Extract code, purge whitespace
+			std::getline(file, name, ' '); file >> std::ws; //Extract name, purge whitespace
+			file >> population >> std::ws >> elevation; //Extract population and elevation
+		}
+		catch (std::ios_base::failure& e)
+		{
+			//Could not extract the required data. File malformed?
+			std::cerr << "Error: City file contains malformed data at line "
+					  << linePosition << "\n";
+					  
+			throw std::ios_base::failure("Unable to parse City file"); //throw to terminate
+		}
+		
+		cities[code] = {code, name, population, elevation}; //follows format of CityInfo struct
+		
+		//Purge newline char, if it's there
+		try
+		{
+			if (file.peek() == '\n') file.ignore();
+		}
+		catch (std::ios_base::failure& e)
+		{
+			//Check if we just ran out of data
+			if (file.rdstate() == ifstream::eofbit)
+			{
+				//Only ran out of data, we're in a good spot to just stop reading
+				++linePosition;
+				break;
+			}
+
+			//Malformed data
+			std::cerr << "Error: City file contains malformed data at end of line "
+					  << linePosition << "\n";
+					  
+			throw std::ios_base::failure("Unable to parse City file"); //throw to terminate
+		}
+		
+		++linePosition;
     }
     file.close();
 }
