@@ -147,10 +147,14 @@ void readRoadData(const string &filename, Graph &graph) {
     file.close();
 }
 
-vector<int> dijkstra(const Graph &graph, int src, int dest) {
-    vector<int> distance(graph.numVerts, numeric_limits<int>::max());
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
-
+std::vector<int> dijkstra(const Graph &graph, int src, int dest) {
+	//Prepopulate distance vector with infinite (as close as we can get anyway)
+    std::vector<int> distance(graph.numVerts, std::numeric_limits<int>::max());
+	
+	//Set up priority queue holding pairs of ints, using vector internally, and make it a min heap
+    std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<>> pq;
+	
+	//Handle the source node
     distance[src] = 0;
     pq.push({0, src});
 	
