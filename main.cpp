@@ -147,21 +147,35 @@ void readRoadData(const string &filename, Graph &graph) {
     file.close();
 }
 
-vector<int> dijkstra(const Graph &graph, int src, int dest) {
-    vector<int> distance(graph.numVerts, numeric_limits<int>::max());
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
+std::vector<int> dijkstra(const Graph &graph, int src, int dest) {
+	//Prepopulate distance vector with infinite (as close as we can get anyway)
+    std::vector<int> distance(graph.numVerts, std::numeric_limits<int>::max());
+	
+	//Set up priority queue holding pairs of ints, using vector internally, and make it a min heap
+    std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<>> pq;
+	
+	//Handle the source node
     distance[src] = 0;
     pq.push({0, src});
+	
     while (!pq.empty()) {
+		//Start out from the layer 0 node
         int u = pq.top().second;
         pq.pop();
+		
+		//Loop through all edges adjacent to the closest node (all nodes in the next layer)
         for (const auto &edge : graph.adjList[u]) {
+			//Get a neighboring node and the cost to get to it
             int v = edge.to_vertex;
             int weight = edge.weight;
-            if (distance[v] > distance[u] + weight) {
-                distance[v] = distance[u] + weight;
-                pq.push({distance[v], v});
-            }
+			
+			//Check if it's cheaper than what we already knew, use it if it is
+			if (distance[v] > distance[u] + weight) {
+				distance[v] = distance[u] + weight;
+				
+				//Since it's cheaper, traverse through it to find more nodes (greedy)
+				pq.push({distance[v], v});
+			}
         }
     }
     return distance;
