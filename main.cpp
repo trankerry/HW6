@@ -1,16 +1,17 @@
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <vector>
 #include <unordered_map>
 #include <queue>
 #include <limits>
 #include <exception>
+
 #include "graph.h" // Include your graph header file here
 
 using namespace std;
 
 struct CityInfo {
+	int id;
     string code;
     string name;
     int population;
@@ -55,7 +56,7 @@ void readCityData(const string &filename) {
 			throw ios_base::failure("Unable to parse City file"); //throw to terminate
 		}
 		
-		cities[code] = {code, name, population, elevation}; //follows format of CityInfo struct
+		cities[code] = {id, code, name, population, elevation}; //follows format of CityInfo struct
 		
 		//Purge newline char, if it's there
 		try
@@ -94,7 +95,7 @@ void readRoadData(const string &filename, Graph &graph) {
 	
     if (!file.is_open()) {
         cerr << "Error: Unable to open road file\n";
-        throw ios_base::failure("Unable to open city file"); //throw to terminate
+        throw ios_base::failure("Unable to open Road file"); //throw to terminate
     }
 
 	//Read the file
@@ -139,7 +140,7 @@ void readRoadData(const string &filename, Graph &graph) {
 			cerr << "Error: Road file contains malformed data at end of line "
 					  << linePosition << "\n";
 					  
-			throw ios_base::failure("Unable to parse road file"); //throw to terminate
+			throw ios_base::failure("Unable to parse Road file"); //throw to terminate
 		}
 		
 		++linePosition;
@@ -147,6 +148,7 @@ void readRoadData(const string &filename, Graph &graph) {
     file.close();
 }
 
+//need to address the for loop bug and the not marking nodes as visited bug
 std::vector<int> dijkstra(const Graph &graph, int src, int dest) {
 	//Prepopulate distance vector with infinite (as close as we can get anyway)
     std::vector<int> distance(graph.numVerts, std::numeric_limits<int>::max());
@@ -181,25 +183,40 @@ std::vector<int> dijkstra(const Graph &graph, int src, int dest) {
     return distance;
 }
 
+//scheduled for rewrite
 void printShortestRoute(const string &fromCity, const string &toCity, const vector<int> &shortestPath) {
+	//Hash cities by first char of their code
     int from = cities[fromCity].code[0] - 'A';
     int to = cities[toCity].code[0] - 'A';
+	
+	//Check if a route even exists
     if (shortestPath[to] == numeric_limits<int>::max()) {
         cout << "No route from " << fromCity << " to " << toCity << endl;
         return;
     }
+	
+	//Print distance between them
     cout << "From City: " << cities[fromCity].name << ", population " << cities[fromCity].population
               << ", elevation " << cities[fromCity].elevation << endl;
     cout << "To City: " << cities[toCity].name << ", population " << cities[toCity].population
               << ", elevation " << cities[toCity].elevation << endl;
     cout << "The shortest distance from " << cities[fromCity].name << " to " << cities[toCity].name
               << " is " << shortestPath[to] << " through the route: ";
+			
+	//Find and print the route
     vector<string> path;
     int current = to;
+	
+	//Walk the node backwards finding the shortest distance? I don't think this works though
+	//It tries to chain backwards throught the nodes but it sets the next node to look at to a
+	//distance value, not a code. Going by progressively shorter distance from the origin also
+	//does not guarantee that the path will be valid
     while (current != from) {
         path.push_back(cities[current].name);
         current = shortestPath[current];
     }
+	
+	//Print the path
     path.push_back(cities[fromCity].name);
     for (auto it = path.rbegin(); it != path.rend(); ++it) {
         if (it != path.rbegin()) {
@@ -211,24 +228,37 @@ void printShortestRoute(const string &fromCity, const string &toCity, const vect
 }
 
 int main(int argc, char *argv[]) {
+	//Check for correct parameter count
     if (argc != 3) {
         cerr << "Usage: " << argv[0] << " <from_city_code> <to_city_code>\n";
-        return EXIT_FAILURE;
+        throw std::invalid_argument("Incorrect amount of arguments");
     }
+	
+	//Get input file names
     string fromCity = argv[1];
     string toCity = argv[2];
+	
+	//Make sure that the given city codes are valid
+    if (cities.find(fromCity) == cities.end()) {
+        cerr << "Invalid city code" << fromCity << "\n";
+        throw std::invalid_argument("Invalid city code");
+    }
+	
+	if (cities.find(toCity) == cities.end()) {
+        cerr << "Invalid city code " << toCity << "\n";
+        throw std::invalid_argument("Invalid city code");
+    }
+	
     // Read city data from the file
     readCityData("city.txt");
-    // Create a graph and read road data
-    Graph graph(20); // Assuming 20 cities
+	
+    // Create a graph and populate with road data
+    Graph graph(cities.size());
     readRoadData("road.txt", graph);
-    if (cities.find(fromCity) == cities.end() || cities.find(toCity) == cities.end()) {
-        cerr << "Invalid city code\n";
-        return EXIT_FAILURE;
-    }
-    int from = cities[fromCity].code[0] - 'A';
-    int to = cities[toCity].code[0] - 'A';
-    auto shortestPath = dijkstra(graph, from, to);
-    printShortestRoute(fromCity, toCity, shortestPath);
+	
+	//Get shortest path
+    //auto shortestPath = dijkstra(graph, cities[fromCity], cities[toCity]); //put this back after the function gets rewritten because the signature is gonna change
+    //printShortestRoute(fromCity, toCity, shortestPath); put this back after the function gets rewritten because the signature is gonna change
+	
     return EXIT_SUCCESS;
 }
