@@ -29,8 +29,7 @@ void readCityData(const string& filename) {
 		throw ios_base::failure("Unable to open city file");
 	}
 
-	string line;
-	while (getline(file, line)) {
+	while (file.good()) {
 		int id, population, elevation;
 		string code, name;
 
