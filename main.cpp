@@ -28,9 +28,11 @@ void readCityData(const string& filename) {
 		cerr << "Error: Unable to open city file\n";
 		throw ios_base::failure("Unable to open city file");
 	}
+	
+	//Set file to throw on failure
+	file.exceptions(ifstream::failbit | ifstream::badbit);
 
-	string line;
-	while (getline(file, line)) {
+	while (file.good()) {
 		int id, population, elevation;
 		string code, name;
 
@@ -47,10 +49,14 @@ void readRoadData(const string& filename, Graph& graph) {
 		cerr << "Error: Unable to open road file\n";
 		throw ios_base::failure("Unable to open road file");
 	}
+	
+	//Set file to throw on failure
+	file.exceptions(ifstream::failbit | ifstream::badbit);
 
 	int from, to;
 	float weight;
-	while (file >> from >> to >> weight) {
+	while (file.good()) {
+		file >> from >> to >> weight;
 		graph.addDirectedEdge(from, to, weight); // Add directed edges to the graph
 	}
 	file.close();
@@ -88,10 +94,15 @@ std::pair<vector<int>, vector<int>> dijkstra(const Graph& graph, int src, int de
 	return {distance, predecessor}; // Return both distance and predecessor vectors
 }
 
-//scheduled for rewrite
 void printShortestRoute(const string &fromCity, const string &toCity, const vector<int> &distance, const vector<int> &predecessor) {
 	int from = cities[fromCity].id; // Source city ID
 	int to = cities[toCity].id;     // Destination city ID
+	
+	// Print city details
+	cout << "From City: " << cities[fromCity].name << ", population " << cities[fromCity].population
+		<< ", elevation " << cities[fromCity].elevation << endl;
+	cout << "To City: " << cities[toCity].name << ", population " << cities[toCity].population
+		<< ", elevation " << cities[toCity].elevation << endl;
 
 	// Check if the destination is unreachable
 	if (distance[to] == numeric_limits<int>::max()) {
@@ -99,11 +110,6 @@ void printShortestRoute(const string &fromCity, const string &toCity, const vect
 		return;
 	}
 
-	// Print city details
-	cout << "From City: " << cities[fromCity].name << ", population " << cities[fromCity].population
-		<< ", elevation " << cities[fromCity].elevation << endl;
-	cout << "To City: " << cities[toCity].name << ", population " << cities[toCity].population
-		<< ", elevation " << cities[toCity].elevation << endl;
 	cout << "The shortest distance from " << cities[fromCity].name << " to " << cities[toCity].name
 		<< " is " << distance[to] << " through the route: ";
 
@@ -157,6 +163,11 @@ int main(int argc, char* argv[]) {
 
 		// Print the shortest route
 		printShortestRoute(fromCity, toCity, distance, predecessor);
+	}
+	catch (const std::ios_base::failure& e)
+	{
+		cerr << "Error: Unable to read city or roads file" << endl;
+		return EXIT_FAILURE;
 	}
 	catch (const std::exception& e) {
 		cerr << "Error: " << e.what() << endl;
