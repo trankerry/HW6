@@ -30,7 +30,7 @@ void readCityData(const string& filename) {
 	}
 	
 	//Set file to throw on failure
-	file.exceptions(ifstream::eofbit | ifstream::failbit | ifstream::badbit);
+	file.exceptions(ifstream::failbit | ifstream::badbit);
 
 	while (file.good()) {
 		int id, population, elevation;
@@ -51,11 +51,12 @@ void readRoadData(const string& filename, Graph& graph) {
 	}
 	
 	//Set file to throw on failure
-	file.exceptions(ifstream::eofbit | ifstream::failbit | ifstream::badbit);
+	file.exceptions(ifstream::failbit | ifstream::badbit);
 
 	int from, to;
 	float weight;
-	while (file >> from >> to >> weight) {
+	while (file.good()) {
+		file >> from >> to >> weight;
 		graph.addDirectedEdge(from, to, weight); // Add directed edges to the graph
 	}
 	file.close();
