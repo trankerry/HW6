@@ -28,6 +28,9 @@ void readCityData(const string& filename) {
 		cerr << "Error: Unable to open city file\n";
 		throw ios_base::failure("Unable to open city file");
 	}
+	
+	//Set file to throw on failure
+	file.exceptions(ifstream::eofbit | ifstream::failbit | ifstream::badbit);
 
 	while (file.good()) {
 		int id, population, elevation;
@@ -46,6 +49,9 @@ void readRoadData(const string& filename, Graph& graph) {
 		cerr << "Error: Unable to open road file\n";
 		throw ios_base::failure("Unable to open road file");
 	}
+	
+	//Set file to throw on failure
+	file.exceptions(ifstream::eofbit | ifstream::failbit | ifstream::badbit);
 
 	int from, to;
 	float weight;
@@ -156,6 +162,11 @@ int main(int argc, char* argv[]) {
 
 		// Print the shortest route
 		printShortestRoute(fromCity, toCity, distance, predecessor);
+	}
+	catch (const std::ios_base::failure& e)
+	{
+		cerr << "Error: Unable to read city or roads file" << endl;
+		return EXIT_FAILURE;
 	}
 	catch (const std::exception& e) {
 		cerr << "Error: " << e.what() << endl;
