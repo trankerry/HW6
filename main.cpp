@@ -87,10 +87,15 @@ std::pair<vector<int>, vector<int>> dijkstra(const Graph& graph, int src, int de
 	return {distance, predecessor}; // Return both distance and predecessor vectors
 }
 
-//scheduled for rewrite
 void printShortestRoute(const string &fromCity, const string &toCity, const vector<int> &distance, const vector<int> &predecessor) {
 	int from = cities[fromCity].id; // Source city ID
 	int to = cities[toCity].id;     // Destination city ID
+	
+	// Print city details
+	cout << "From City: " << cities[fromCity].name << ", population " << cities[fromCity].population
+		<< ", elevation " << cities[fromCity].elevation << endl;
+	cout << "To City: " << cities[toCity].name << ", population " << cities[toCity].population
+		<< ", elevation " << cities[toCity].elevation << endl;
 
 	// Check if the destination is unreachable
 	if (distance[to] == numeric_limits<int>::max()) {
@@ -98,11 +103,6 @@ void printShortestRoute(const string &fromCity, const string &toCity, const vect
 		return;
 	}
 
-	// Print city details
-	cout << "From City: " << cities[fromCity].name << ", population " << cities[fromCity].population
-		<< ", elevation " << cities[fromCity].elevation << endl;
-	cout << "To City: " << cities[toCity].name << ", population " << cities[toCity].population
-		<< ", elevation " << cities[toCity].elevation << endl;
 	cout << "The shortest distance from " << cities[fromCity].name << " to " << cities[toCity].name
 		<< " is " << distance[to] << " through the route: ";
 
