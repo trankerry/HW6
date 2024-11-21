@@ -18,18 +18,15 @@ struct Edge { // This structure represents an edge in the graph.
     int from_vertex;
     int to_vertex;
     float weight; //It has public members from_vertex, to_vertex, and weight.
-    Edge(int from_vertex = 0, int to_vertex = 0, float weight = 0) { //It has a constructor to initialize these members.
-        this->from_vertex = from_vertex;
-        this->to_vertex = to_vertex;
-        this->weight = weight;
-    }
+    Edge() : from_vertex(0), to_vertex(0), weight(0.0f) {} //It has a default constructor to initialize these members.
+    Edge(int from_vertex, int to_vertex, float weight);
 };
 
 class Graph { //This class represents a graph.
 public: // It has public members numVerts (number of vertices), vertices (a vector of Vertex objects), and adjList (a 2D vector representing the adjacency list of the graph).
     int numVerts;
     vector<Vertex> vertices;
-    vector<vector<Edge>> adjList; // It has a default constructor, a parameterized constructor, a destructor, and various member functions for graph operations:
+    vector<vector<Edge> > adjList; // It has a default constructor, a parameterized constructor, a destructor, and various member functions for graph operations:
     Graph()
     {
         numVerts = 0;

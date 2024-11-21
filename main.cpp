@@ -38,7 +38,13 @@ void readCityData(const string& filename) {
 
 		// Parse city data
 		file >> id >> code >> name >> population >> elevation;
-		cities[code] = { id, code, name, population, elevation };
+		CityInfo info;
+        info.id = id;
+        info.code = code;
+        info.name = name;
+        info.population = population;
+        info.elevation = elevation;
+        cities[code] = info;
 	}
 	file.close();
 }
@@ -64,21 +70,22 @@ void readRoadData(const string& filename, Graph& graph) {
 
 
 // Dijkstra function to calculate shortest paths and predecessors
-std::pair<vector<int>, vector<int>> dijkstra(const Graph& graph, int src, int dest) {
+pair<vector<int>, vector<int> > dijkstra(const Graph& graph, int src, int dest) {
 	vector<int> distance(graph.numVerts, numeric_limits<int>::max());
 	vector<int> predecessor(graph.numVerts, -1);
-	priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
+	priority_queue<pair<int, int>, vector<pair<int, int> >, greater<pair<int, int> > > pq;
 
 	// Initialize source node
 	distance[src] = 0;
-	pq.push({ 0, src });
+	pq.push(make_pair(0, src));
 
 	while (!pq.empty()) {
 		int u = pq.top().second; // Get the node with the smallest distance
 		pq.pop();
 
 		// Explore neighbors of the current node
-		for (const auto& edge : graph.adjList[u]) {
+		for (size_t i = 0; i < graph.adjList[u].size(); ++i) {
+            const Edge& edge = graph.adjList[u][i];
 			int v = edge.to_vertex;
 			int weight = edge.weight;
 
@@ -86,12 +93,12 @@ std::pair<vector<int>, vector<int>> dijkstra(const Graph& graph, int src, int de
 			if (distance[v] > distance[u] + weight) {
 				distance[v] = distance[u] + weight;
 				predecessor[v] = u;
-				pq.push({ distance[v], v }); // Push the updated node into the queue
+				pq.push(make_pair(distance[v], v)); // Push the updated node into the queue
 			}
 		}
 	}
 
-	return {distance, predecessor}; // Return both distance and predecessor vectors
+	return make_pair(distance, predecessor); // Return both distance and predecessor vectors
 }
 
 void printShortestRoute(const string &fromCity, const string &toCity, const vector<int> &distance, const vector<int> &predecessor) {
@@ -116,7 +123,8 @@ void printShortestRoute(const string &fromCity, const string &toCity, const vect
 	vector<string> path;
 	int current = to;
 	while (current != -1) {
-		for (const auto& pair : cities) {
+		for (unordered_map<string, CityInfo>::const_iterator it = cities.begin(); it != cities.end(); ++it) {
+            const pair<string, CityInfo>& pair = *it;
 			if (pair.second.id == current) {
 				path.push_back(pair.second.name);
 				break;
@@ -159,17 +167,19 @@ int main(int argc, char* argv[]) {
 		}
 
 		// Run Dijkstra's algorithm
-		auto [distance, predecessor] = dijkstra(graph, cities[fromCity].id, cities[toCity].id);
+		pair<vector<int>, vector<int> > result = dijkstra(graph, cities[fromCity].id, cities[toCity].id);
+        vector<int>& distance = result.first;
+        vector<int>& predecessor = result.second;
 
 		// Print the shortest route
 		printShortestRoute(fromCity, toCity, distance, predecessor);
 	}
-	catch (const std::ios_base::failure& e)
+	catch (const ios_base::failure& e)
 	{
 		cerr << "Error: Unable to read city or roads file" << endl;
 		return EXIT_FAILURE;
 	}
-	catch (const std::exception& e) {
+	catch (const exception& e) {
 		cerr << "Error: " << e.what() << endl;
 		return EXIT_FAILURE;
 	}

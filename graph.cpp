@@ -40,7 +40,8 @@ vector<int> Graph::DepthFirstSearch(int v) { // DepthFirstSearch performs a dept
 void Graph::DFSUtil(int v, vector<int> &visited, vector<int> &result) {// This is a utility function for depth-first search.
     visited[v] = 1;      //It marks the current vertex as visited and adds it to the result vector.
     result.push_back(v); // It recursively explores the unvisited neighbors.
-    for (auto &edge : adjList[v]) {
+    for (size_t i = 0; i < adjList[v].size(); ++i) {
+        Edge &edge = adjList[v][i];
         if (visited[edge.to_vertex] == 0)
             DFSUtil(edge.to_vertex, visited, result);
     }
@@ -57,7 +58,8 @@ vector<int> Graph::BreadthFirstSearch(int v) {// performs a breadth-first search
         if (visited[v] == 0) {
             result.push_back(v);
             visited[v] = 1;
-            for (auto &edge : adjList[v]) {
+            for (size_t i = 0; i < adjList[v].size(); ++i) {
+        Edge &edge = adjList[v][i];
                 if (visited[edge.to_vertex] == 0)
                     que.push(edge.to_vertex);
             }
@@ -77,7 +79,8 @@ bool Graph::checkCycle() {// checks whether the graph contains a cycle using bre
             while (!que.empty()) {
                 int v = que.front();
                 que.pop();
-                for (auto &edge : adjList[v]) {
+                for (size_t i = 0; i < adjList[v].size(); ++i) {
+        Edge &edge = adjList[v][i];
                     if (visited[edge.to_vertex] == 0) {
                         visited[edge.to_vertex] = 1;
                         que.push(edge.to_vertex);
@@ -97,10 +100,16 @@ void Graph::printGraph() {// prints the graph by iterating through each vertex a
     cout << "Graph:" << endl;
     for (int i = 0; i < numVerts; i++) {
         cout << i << ": ";
-        for (auto &edge : adjList[i]) {
+        for (size_t j = 0; j < adjList[i].size(); ++j) {
+        Edge &edge = adjList[i][j];
             cout << edge.to_vertex << " ";
         }
         cout << endl;
     }
     cout << endl;
+}
+Edge::Edge(int from_vertex, int to_vertex, float weight) {
+    this->from_vertex = from_vertex;
+    this->to_vertex = to_vertex;
+    this->weight = weight;
 }
