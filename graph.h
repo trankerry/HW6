@@ -33,14 +33,6 @@ public: // It has public members numVerts (number of vertices), vertices (a vect
     }
     Graph(int n);
     ~Graph();
-    void addVertex(Vertex v);                                    // Adds a vertex to the graph.
     void addDirectedEdge(int v1, int v2, float weight = 1.0f);   // Adds a directed edge between two vertices with an optional weight.
-    void addUndirectedEdge(int v1, int v2, float weight = 1.0f); // Adds an undirected edge between two vertices with an optional weight.
-    int outDegree(int v);                                        // Returns the out-degree of a vertex.
-    vector<int> DepthFirstSearch(int v);                         // Performs Depth-First Search starting from a given vertex.
-    vector<int> BreadthFirstSearch(int v);                       // Performs Breadth-First Search starting from a given vertex.
-    bool checkCycle();                                           // Checks whether the graph contains a cycle.
     void printGraph();                                           // Prints the graph.
-private:
-    void DFSUtil(int v, vector<int> &visited, vector<int> &result);
 };

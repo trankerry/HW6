@@ -104,6 +104,13 @@ pair<vector<int>, vector<int> > dijkstra(const Graph& graph, int src, int dest) 
 void printShortestRoute(const string &fromCity, const string &toCity, const vector<int> &distance, const vector<int> &predecessor) {
 	int from = cities[fromCity].id; // Source city ID
 	int to = cities[toCity].id;     // Destination city ID
+
+	//Print assignment details
+	cout << "Author: Kenneth Lopez, Kerry Tran, and Sierra Brandt" << endl;
+	cout << "Date: 11/24/2024" << endl;
+	cout << "Course: CS311 (Data structures and Algorithms)" << endl;
+	cout << "Description : Program to find the shortest route between cities" << endl;
+	cout << "----------------------------------------------------------------" << endl;
 	
 	// Print city details
 	cout << "From City: " << cities[fromCity].name << ", population " << cities[fromCity].population
